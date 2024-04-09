@@ -130,37 +130,33 @@ extension PeerDIDHelper {
     
     struct PeerDIDService: Codable {
         
-        struct ServiceEndpoint: Codable {
-            let uri: String
-            let r: [String]? // Routing keys
-            let a: [String]? // Accept
-        }
-        
         let t: String // Type
-        let s: ServiceEndpoint // Service Endpoint
+        let s: String // Service Endpoint
         
         init(from: DIDDocument.Service) throws {
             self.t = from.type
+            self.s = from.serviceEndpoint
+/*
             guard
-                let dic = from.serviceEndpoint.value as? [String: Any],
+                , // String ServiceEndpoint
                 let uri = dic["uri"] as? String
             else {
                 throw PeerDIDError.invalidPeerDIDService
             }
+
             self.s = .init(
                 uri: uri,
                 r: dic["routing_keys"] as? [String],
                 a: dic["accept"] as? [String]
             )
+ */
         }
         
         func toDIDDocumentService(did: String, index: Int) throws -> DIDDocument.Service {
             return .init(
                 id: "\(did)#\(t.lowercased())-\(index+1)",
                 type: t,
-                serviceEndpoint: AnyCodable(
-                    dictionaryLiteral: ("uri", s.uri), ("accept", s.a ?? []), ("routing_keys", s.r ?? [])
-                )
+                serviceEndpoint: s
             )
         }
     }
@@ -181,11 +177,7 @@ extension PeerDIDHelper {
         
         init(from: DIDDocument.Service) throws {
             self.t = from.type
-            guard 
-                let uri = from.serviceEndpoint.value as? String
-            else {
-                throw PeerDIDError.invalidPeerDIDService
-            }
+            let uri = from.serviceEndpoint
             self.s = uri
             self.r = []
             self.a = []
@@ -199,7 +191,7 @@ extension PeerDIDHelper {
             return .init(
                 id: "\(did)#\(t.lowercased())-\(index+1)",
                 type: t,
-                serviceEndpoint: AnyCodable(dictionaryLiteral: ("uri", s), ("accept", a ?? []), ("routing_keys", r ?? []))
+                serviceEndpoint: s
             )
         }
     }
